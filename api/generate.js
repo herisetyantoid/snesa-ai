@@ -2,6 +2,7 @@ import OpenAI from "openai";
 const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
 export default async function handler(req,res){
  if(req.method!=="POST")return res.status(405).json({error:"Method not allowed"});
+ if(process.env.SNESA_ACCESS_CODE && req.headers["x-snesa-code"]!==process.env.SNESA_ACCESS_CODE)return res.status(401).json({error:"Kode akses SNESA AI tidak valid."});
  if(!process.env.OPENAI_API_KEY)return res.status(500).json({error:"OPENAI_API_KEY belum dikonfigurasi."});
  try{
   const d=req.body||{},model=process.env.OPENAI_MODEL||"gpt-5.6-luna";
