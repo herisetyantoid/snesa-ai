@@ -42,6 +42,8 @@ label{font-size:13px;font-weight:800}input,select,textarea{width:100%;margin-top
 <section id="numerasi" class="page">
 <div class="card numhero"><span class="badge">SNESA NUMERASI</span><h1>🔢 Belajar Matematika Dasar dengan Bertahap</h1><p class="muted">Dirancang untuk membantu siswa menguatkan kemampuan <b>penjumlahan, pengurangan, perkalian, dan pembagian</b>, kemudian menerapkannya pada masalah nyata dan soal model TKA.</p>
 <div class="path"><span class="step">1. Materi Dasar</span><span class="arrow">→</span><span class="step">2. Contoh Cara</span><span class="arrow">→</span><span class="step">3. Latihan</span><span class="arrow">→</span><span class="step">4. Kontekstual</span><span class="arrow">→</span><span class="step">5. Model TKA</span></div></div>
+<div class="card"><h2>🎯 Diagnostik Kemampuan Awal</h2><p class="muted">Kerjakan 5 soal singkat. Hasil digunakan untuk menentukan titik awal latihan.</p><div id="diagBox"></div><button class="btn primary" onclick="startDiag()">Mulai Diagnostik</button><div id="diagResult" class="status"></div></div>
+<div class="card"><h2>📊 Progres Belajar</h2><div class="grid"><div class="tile"><h3 id="scoreNum">0</h3><p>Skor terakhir</p></div><div class="tile"><h3 id="levelNum">Belum ada</h3><p>Level rekomendasi</p></div><div class="tile"><h3 id="doneNum">0</h3><p>Soal benar</p></div></div></div>
 <div class="card"><h2>🎓 Pilih Tingkat</h2><div class="grid">
 <div class="tile" onclick="setNum(7)"><div class="icon">7️⃣</div><h3>Kelas 7</h3><p>Penguatan operasi hitung dan pemecahan masalah sederhana.</p></div>
 <div class="tile" onclick="setNum(8)"><div class="icon">8️⃣</div><h3>Kelas 8</h3><p>Operasi hitung, pecahan, perbandingan, dan konteks sehari-hari.</p></div>
@@ -71,6 +73,9 @@ const saved=localStorage.getItem('snesa_access')||'';if(saved)$('login').style.d
 $('loginBtn').onclick=()=>{const v=$('access').value.trim();if(!v){$('loginMsg').textContent='Kode akses wajib diisi.';return}localStorage.setItem('snesa_access',v);$('login').style.display='none'};
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));scrollTo({top:0,behavior:'smooth'})}
+const diagQs=[{q:'8 + 7 = ?',a:15},{q:'20 − 6 = ?',a:14},{q:'6 × 4 = ?',a:24},{q:'36 ÷ 6 = ?',a:6},{q:'25 + 15 − 10 = ?',a:30}];
+function startDiag(){let h='<div class="grid2">';diagQs.forEach((x,i)=>h+='<label>Soal '+(i+1)+': '+x.q+'<input id="diag'+i+'" type="number" placeholder="Jawaban"></label>');h+='</div>';h+='<button class="btn secondary" style="margin-top:12px" onclick="checkDiag()">Periksa Diagnostik</button>';$('diagBox').innerHTML=h}
+function checkDiag(){let s=0;diagQs.forEach((x,i)=>{if(Number($('diag'+i).value)===x.a)s++});let level=s<=2?'Penguatan Dasar':s<=4?'Latihan Bertahap':'Siap Kontekstual/TKA';$('scoreNum').textContent=s+'/5';$('doneNum').textContent=s;$('levelNum').textContent=level;$('diagResult').innerHTML='Hasil: <b>'+s+' dari 5 benar</b>. Rekomendasi awal: <b>'+level+'</b>.';localStorage.setItem('snesa_num_level',level)}
 function setNum(n){numLevel=n;$('numwork').innerHTML='<h2>📝 Latihan Numerasi Kelas '+n+'</h2><p class="muted">Sekarang pilih salah satu materi di atas untuk memulai.</p>';scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
 const topics={
 tambah:{title:'Penjumlahan',example:'245 + 138',steps:'245 + 100 = 345; 345 + 38 = 383.',q:'Di perpustakaan ada 245 buku. Datang lagi 138 buku. Berapa jumlah buku sekarang?',ans:'383'},
