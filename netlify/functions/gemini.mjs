@@ -77,6 +77,40 @@ Berikan jawaban yang langsung membantu dan dapat diterapkan.
   }
 
   const d = data || {};
+  const jenis = String(d.jenis || "");
+  if (!jenis.toLowerCase().includes("rpp / modul ajar")) {
+    return `
+Anda membuat dokumen pendidikan untuk guru SMP berdasarkan parameter berikut.
+
+JENIS DOKUMEN: ${jenis}
+IDENTITAS:
+Nama Penyusun: ${d.penyusun || "........................"}
+NIP Guru: ${d.nip || "........................"}
+Nama Sekolah: ${d.sekolah || "........................"}
+Tahun Pelajaran: ${d.tahun || "........................"}
+Mata Pelajaran: ${d.mapel || "........................"}
+Fase/Kelas: ${d.kelas || "........................"}
+Semester: ${d.semester || "........................"}
+Materi/Topik: ${d.materi || "........................"}
+
+PARAMETER KHUSUS:
+${Object.entries(d).filter(([k]) => !["jenis","penyusun","nip","sekolah","tahun","mapel","kelas","semester","materi"].includes(k)).map(([k,v]) => `${k}: ${v || "........................"}`).join("\\n")}
+
+ATURAN:
+- Gunakan bahasa Indonesia formal, praktis, kontekstual, dan siap digunakan.
+- Jangan mengarang identitas.
+- Jangan mencampurkan contoh IPA jika mapelnya bukan IPA.
+- Sesuaikan isi dengan jenis dokumen yang dipilih.
+- Susun dengan heading yang jelas, tabel bila membantu, serta bagian yang lengkap dan siap pakai.
+
+KHUSUS PROTA: tampilkan pembagian materi/TP sepanjang tahun, minggu efektif, JP, dan distribusi semester.
+KHUSUS PROMES: tampilkan distribusi materi/TP per minggu/bulan, JP, minggu efektif, dan evaluasi.
+KHUSUS ASESMEN: tampilkan kisi-kisi, soal sesuai jumlah dan tipe, kunci jawaban, serta pedoman penskoran.
+KHUSUS LKPD: tampilkan tujuan, alat/bahan, keselamatan bila perlu, langkah kerja, tabel data, pertanyaan analisis, kesimpulan, refleksi, dan asesmen.
+KHUSUS PROGRAM PEMBELAJARAN: tampilkan latar belakang, tujuan, sasaran, tahapan kegiatan, jadwal, indikator keberhasilan, evaluasi, dan tindak lanjut.
+`;
+  }
+
   return `
 Buat RENCANA PEMBELAJARAN MENDALAM (RPM) lengkap berdasarkan data berikut.
 
