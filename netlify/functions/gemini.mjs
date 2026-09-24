@@ -13,6 +13,7 @@ Gunakan prinsip Pembelajaran Mendalam: berkesadaran, bermakna, dan menggembiraka
 Gunakan Dimensi Profil Lulusan sesuai input guru.
 Jangan mengarang data identitas guru/sekolah. Jika kosong, gunakan tanda "........................".
 Jangan menghilangkan bagian template. Jika suatu bagian tidak relevan, tetap isi dengan penyesuaian yang masuk akal.
+Jangan gunakan simbol markdown seperti tanda bintang (**), tanda pagar (#), atau backtick untuk menekankan atau menebalkan kata. Tulis jawaban dalam kalimat dan paragraf yang natural tanpa simbol pemformatan tersebut, seperti orang mengetik pesan biasa.
 `;
 
 const RPM_SCHEMA = {
