@@ -358,7 +358,6 @@ export default async (req) => {
 
     const config = {
       systemInstruction: SYSTEM_INSTRUCTION,
-      temperature: 0.7,
       maxOutputTokens: 12000
     };
 
@@ -373,11 +372,66 @@ export default async (req) => {
       }
     }
 
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: userPrompt,
-      config
-    });
+    // Gemini 3.8 Flash dapat sementara mengembalikan 503 saat kapasitas penuh.
+    // Gunakan retry singkat + fallback ke model Flash stabil lain agar generator
+    // tetap dapat melayani guru tanpa perlu mengganti environment variable manual.
+    const fallbackModels = [
+      GEMINI_MODEL,
+      "gemini-3.6-flash",
+      "gemini-3.5-flash-lite"
+    ].filter((model, index, list) => model && list.indexOf(model) === index);
+
+    const isTransientGeminiError = (error) => {
+      const code = Number(error?.status ?? error?.code);
+      const message = String(error?.message || "").toLowerCase();
+      return [408, 429, 500, 502, 503, 504].includes(code)
+        || /\b(408|429|500|502|503|504)\b/.test(message)
+        || message.includes("unavailable")
+        || message.includes("high demand")
+        || message.includes("temporarily");
+    };
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    let response;
+    let usedModel = GEMINI_MODEL;
+    let lastError;
+
+    for (const [modelIndex, model] of fallbackModels.entries()) {
+      const attempts = modelIndex === 0 ? 2 : 1;
+
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+          if (attempt > 0) {
+            await sleep(1200 * attempt);
+          }
+
+          response = await ai.models.generateContent({
+            model,
+            contents: userPrompt,
+            config
+          });
+
+          usedModel = model;
+          break;
+        } catch (error) {
+          lastError = error;
+          console.error(`Gemini model ${model} attempt ${attempt + 1} failed:`, error?.message || error);
+
+          if (!isTransientGeminiError(error)) {
+            throw error;
+          }
+        }
+      }
+
+      if (response) break;
+
+      console.warn(`Gemini model ${model} unavailable; trying fallback model if available.`);
+    }
+
+    if (!response) {
+      throw lastError || new Error("Semua model Gemini sedang tidak tersedia.");
+    }
 
     let text = response.text?.trim();
 
@@ -406,7 +460,7 @@ export default async (req) => {
       }
     }
 
-    return json({ ok: true, text, model: GEMINI_MODEL });
+    return json({ ok: true, text, model: usedModel });
   } catch (error) {
     console.error("Gemini error:", error);
     return json({ error: error?.message || "Terjadi kesalahan saat menghubungi Gemini API." }, 500);
