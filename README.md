@@ -8,34 +8,85 @@ Repository: https://github.com/herisetyantoid/snesa-ai
 
 ## Arsitektur
 
-SNESA AI menggunakan:
+Versi ini sudah disiapkan khusus untuk **Netlify**.
 
 - Frontend: `public/index.html`
-- Backend: `server.js`
+- Netlify Functions: `netlify/functions/`
 - AI: Google Gemini API melalui `@google/genai`
-- Endpoint utama: `POST /api/gemini`
+- Endpoint AI: `POST /api/gemini`
 - Health check: `GET /api/health`
+- Konfigurasi Netlify: `netlify.toml`
 
-**API Key Gemini tidak disimpan di HTML dan tidak dikirim ke browser.** API key dibaca oleh backend dari environment variable `GEMINI_API_KEY`.
+API Key Gemini **tidak disimpan di HTML** dan tidak dikirim ke browser. API key dibaca oleh Netlify Function dari environment variable `GEMINI_API_KEY`.
 
-Google merekomendasikan Google GenAI SDK untuk JavaScript/Node.js dan penggunaan environment variable untuk API key. Node.js 18+ didukung oleh SDK. 
+## Deploy ke Netlify
 
-## Menjalankan di komputer
+### 1. Pastikan repository sudah di GitHub
 
-### 1. Clone repository
+Repository yang digunakan:
 
-```bash
-git clone https://github.com/herisetyantoid/snesa-ai.git
-cd snesa-ai
-```
+`herisetyantoid/snesa-ai`
 
-### 2. Install dependency
+### 2. Hubungkan repository ke Netlify
+
+Di Netlify:
+
+1. Pilih **Add new project / Import an existing project**.
+2. Pilih **GitHub**.
+3. Pilih repository `herisetyantoid/snesa-ai`.
+4. Deploy.
+
+File `netlify.toml` sudah mengatur:
+
+- Publish directory: `public`
+- Functions directory: `netlify/functions`
+- Bundler: `esbuild`
+
+Jadi tidak perlu menjalankan `server.js` sebagai web server di Netlify.
+
+### 3. Isi Environment Variables
+
+Di pengaturan project Netlify, tambahkan:
+
+`GEMINI_API_KEY` = API key dari Google AI Studio
+
+`GEMINI_MODEL` = model Gemini yang tersedia pada akun/API key Bapak
+
+`SNESA_ACCESS_CODE` = kode akses guru SNESA AI
+
+**Jangan memasukkan API key ke `public/index.html` atau ke repository.**
+
+Setelah mengubah environment variable, lakukan deploy baru agar nilainya digunakan oleh Functions.
+
+### 4. Tes setelah deploy
+
+Buka:
+
+`https://NAMA-SITE-BAPAK.netlify.app/`
+
+Tes health check:
+
+`https://NAMA-SITE-BAPAK.netlify.app/api/health`
+
+Tes utama dilakukan dari halaman SNESA AI dengan:
+
+- Generator RPP / Modul Ajar
+- Generator LKPD
+- Generator asesmen
+- Guru SNESA / chatbot
+- Fitur SNESA Numerasi yang membutuhkan AI
+
+## Menjalankan secara lokal
+
+Untuk pengembangan lokal, `server.js` tetap dipertahankan.
+
+### 1. Install dependency
 
 ```bash
 npm install
 ```
 
-### 3. Buat file .env
+### 2. Buat file .env
 
 Salin `.env.example` menjadi `.env`.
 
@@ -60,9 +111,7 @@ SNESA_ACCESS_CODE=kode_rahasia_guru
 PORT=3000
 ```
 
-Jangan pernah memasukkan API key ke `public/index.html` atau meng-commit file `.env`.
-
-### 4. Jalankan
+### 3. Jalankan
 
 ```bash
 npm start
@@ -70,26 +119,19 @@ npm start
 
 Buka:
 
-http://localhost:3000
-
-Health check:
-
-http://localhost:3000/api/health
+`http://localhost:3000`
 
 ## Endpoint Gemini
 
 Frontend mengirim request ke:
 
-```
-POST /api/gemini
-```
+`POST /api/gemini`
 
 Header:
 
-```
-Content-Type: application/json
-x-snesa-code: KODE_AKSES
-```
+`Content-Type: application/json`
+
+`x-snesa-code: KODE_AKSES`
 
 Mode generator:
 
@@ -122,66 +164,7 @@ Mode Guru SNESA:
 }
 ```
 
-Respons:
-
-```json
-{
-  "ok": true,
-  "text": "hasil dari Gemini",
-  "model": "gemini-3.8-flash"
-}
-```
-
-## Deploy
-
-### Opsi yang cocok untuk struktur ini: Render
-
-1. Pastikan kode sudah ada di GitHub.
-2. Buat **Web Service** baru dari repository `herisetyantoid/snesa-ai`.
-3. Build Command:
-
-```bash
-npm install
-```
-
-4. Start Command:
-
-```bash
-npm start
-```
-
-5. Tambahkan Environment Variables:
-
-```
-GEMINI_API_KEY=API_KEY_GEMINI_BAPAK
-GEMINI_MODEL=gemini-3.8-flash
-SNESA_ACCESS_CODE=kode_rahasia_guru
-```
-
-6. Deploy.
-7. Buka alamat website yang diberikan platform.
-
-> Catatan: struktur sekarang memakai Express + `server.js`, sehingga deployment harus menggunakan platform yang menjalankan Node.js server. Jangan memasukkan Gemini API key ke file frontend.
-
-## Alur SNESA AI
-
-```
-Guru
-  ↓
-public/index.html
-  ↓
-POST /api/gemini
-  ↓
-server.js
-  ↓
-Google Gemini API
-  ↓
-hasil AI
-  ↓
-SNESA AI
-```
-
-## Fitur yang sudah disiapkan
+## Fitur
 
 - Dashboard SNESA AI
 - SNESA Numerasi
@@ -194,7 +177,7 @@ SNESA AI
 - Generator asesmen
 - Generator program pembelajaran
 - Guru SNESA chatbot
-- Koneksi Gemini melalui backend
+- Koneksi Gemini melalui Netlify Function
 - Kode akses guru
 - Copy hasil
 - Cetak / PDF
@@ -202,9 +185,6 @@ SNESA AI
 ## Keamanan
 
 - `.env` masuk `.gitignore`.
-- Gemini API key hanya berada di server.
-- Frontend hanya memanggil endpoint `/api/gemini`.
-- Kode akses guru diverifikasi oleh backend jika `SNESA_ACCESS_CODE` diaktifkan.
-
-Untuk mendapatkan API key Gemini, gunakan Google AI Studio dan simpan key sebagai environment variable, bukan di source code.
-
+- Gemini API key hanya berada di environment variable server/Netlify.
+- Browser hanya memanggil endpoint `/api/gemini`.
+- Kode akses guru diverifikasi oleh Netlify Function jika `SNESA_ACCESS_CODE` diaktifkan.
