@@ -49,6 +49,76 @@ const RPM_SCHEMA = {
   ]
 };
 
+
+const SIMPLE_DOC_SCHEMAS = {
+  prota: {
+    type:"object",
+    properties:{
+      judul:{type:"string"},identitas:{type:"string"},tujuan:{type:"string"},
+      distribusi:{type:"string"},catatan:{type:"string"}
+    },
+    required:["judul","identitas","tujuan","distribusi","catatan"]
+  },
+  promes: {
+    type:"object",
+    properties:{
+      judul:{type:"string"},identitas:{type:"string"},tujuan:{type:"string"},
+      distribusi:{type:"string"},evaluasi:{type:"string"},catatan:{type:"string"}
+    },
+    required:["judul","identitas","tujuan","distribusi","evaluasi","catatan"]
+  },
+  asesmen: {
+    type:"object",
+    properties:{
+      judul:{type:"string"},identitas:{type:"string"},kisi_kisi:{type:"string"},
+      soal:{type:"string"},kunci:{type:"string"},penskoran:{type:"string"}
+    },
+    required:["judul","identitas","kisi_kisi","soal","kunci","penskoran"]
+  },
+  lkpd: {
+    type:"object",
+    properties:{
+      judul:{type:"string"},identitas:{type:"string"},tujuan:{type:"string"},
+      stimulus:{type:"string"},alat_bahan:{type:"string"},langkah_kegiatan:{type:"string"},
+      tabel_data:{type:"string"},pertanyaan:{type:"string"},kesimpulan_refleksi:{type:"string"},
+      asesmen:{type:"string"}
+    },
+    required:["judul","identitas","tujuan","stimulus","alat_bahan","langkah_kegiatan","tabel_data","pertanyaan","kesimpulan_refleksi","asesmen"]
+  },
+  program: {
+    type:"object",
+    properties:{
+      judul:{type:"string"},identifikasi_masalah:{type:"string"},latar_belakang:{type:"string"},
+      tujuan:{type:"string"},sasaran:{type:"string"},strategi:{type:"string"},
+      jadwal_kegiatan:{type:"string"},indikator_keberhasilan:{type:"string"},
+      evaluasi:{type:"string"},tindak_lanjut:{type:"string"}
+    },
+    required:["judul","identifikasi_masalah","latar_belakang","tujuan","sasaran","strategi","jadwal_kegiatan","indikator_keberhasilan","evaluasi","tindak_lanjut"]
+  }
+};
+
+function docType(jenis){
+  const v=String(jenis||"").toLowerCase();
+  if(v.includes("tahunan")) return "prota";
+  if(v.includes("semester")) return "promes";
+  if(v.includes("soal")) return "asesmen";
+  if(v.includes("lkpd")) return "lkpd";
+  if(v.includes("program pembelajaran")) return "program";
+  return null;
+}
+
+function formatSimpleDoc(type,r){
+  const titles={prota:"PROGRAM TAHUNAN (PROTA)",promes:"PROGRAM SEMESTER (PROMES)",asesmen:"PAKET SOAL EVALUASI / ASESMEN",lkpd:"LEMBAR KEGIATAN MURID (LKM/LKPD)",program:"PROGRAM PEMBELAJARAN"};
+  const sections={
+    prota:[["IDENTITAS",r.identitas],["TUJUAN PROGRAM",r.tujuan],["DISTRIBUSI MATERI / TP DAN ALOKASI WAKTU",r.distribusi],["CATATAN",r.catatan]],
+    promes:[["IDENTITAS",r.identitas],["TUJUAN PROGRAM",r.tujuan],["DISTRIBUSI MATERI / TP PER MINGGU",r.distribusi],["EVALUASI",r.evaluasi],["CATATAN",r.catatan]],
+    asesmen:[["IDENTITAS",r.identitas],["KISI-KISI",r.kisi_kisi],["SOAL",r.soal],["KUNCI JAWABAN",r.kunci],["PEDOMAN PENSKORAN",r.penskoran]],
+    lkpd:[["IDENTITAS",r.identitas],["TUJUAN",r.tujuan],["STIMULUS / PEMANTIK",r.stimulus],["ALAT DAN BAHAN",r.alat_bahan],["LANGKAH KEGIATAN",r.langkah_kegiatan],["TABEL DATA / HASIL PENGAMATAN",r.tabel_data],["PERTANYAAN ANALISIS",r.pertanyaan],["KESIMPULAN DAN REFLEKSI",r.kesimpulan_refleksi],["ASESMEN",r.asesmen]],
+    program:[["IDENTIFIKASI MASALAH",r.identifikasi_masalah],["LATAR BELAKANG",r.latar_belakang],["TUJUAN",r.tujuan],["SASARAN",r.sasaran],["STRATEGI / BENTUK KEGIATAN",r.strategi],["JADWAL KEGIATAN",r.jadwal_kegiatan],["INDIKATOR KEBERHASILAN",r.indikator_keberhasilan],["EVALUASI",r.evaluasi],["TINDAK LANJUT",r.tindak_lanjut]]
+  };
+  return "# "+titles[type]+"\n\n## "+r.judul+"\n\n"+sections[type].map(([h,v])=>"### "+h+"\n"+v).join("\n\n");
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -292,9 +362,15 @@ export default async (req) => {
       maxOutputTokens: 12000
     };
 
-    if (mode === "generate" && String(data?.jenis || "").toLowerCase().includes("rpp / modul ajar")) {
-      config.responseMimeType = "application/json";
-      config.responseSchema = RPM_SCHEMA;
+    if (mode === "generate") {
+      const type = docType(data?.jenis);
+      if (type === "prota" || type === "promes" || type === "asesmen" || type === "lkpd" || type === "program") {
+        config.responseMimeType = "application/json";
+        config.responseSchema = SIMPLE_DOC_SCHEMAS[type];
+      } else if (String(data?.jenis || "").toLowerCase().includes("rpp / modul ajar")) {
+        config.responseMimeType = "application/json";
+        config.responseSchema = RPM_SCHEMA;
+      }
     }
 
     const response = await ai.models.generateContent({
@@ -309,13 +385,24 @@ export default async (req) => {
       return json({ error: "Gemini tidak mengembalikan teks. Silakan coba lagi." }, 502);
     }
 
-    if (mode === "generate" && String(data?.jenis || "").toLowerCase().includes("rpp / modul ajar")) {
-      try {
-        const structured = JSON.parse(text);
-        text = formatRPM(structured);
-      } catch (parseError) {
-        console.error("RPM JSON parse error:", parseError);
-        return json({ error: "Format RPM dari Gemini tidak valid. Silakan coba lagi." }, 502);
+    if (mode === "generate") {
+      const type = docType(data?.jenis);
+      if (type && type !== "rpm") {
+        try {
+          const structured = JSON.parse(text);
+          text = formatSimpleDoc(type, structured);
+        } catch (parseError) {
+          console.error("Structured document parse error:", parseError);
+          return json({ error: "Format dokumen dari Gemini tidak valid. Silakan coba lagi." }, 502);
+        }
+      } else if (String(data?.jenis || "").toLowerCase().includes("rpp / modul ajar")) {
+        try {
+          const structured = JSON.parse(text);
+          text = formatRPM(structured);
+        } catch (parseError) {
+          console.error("RPM JSON parse error:", parseError);
+          return json({ error: "Format RPM dari Gemini tidak valid. Silakan coba lagi." }, 502);
+        }
       }
     }
 
