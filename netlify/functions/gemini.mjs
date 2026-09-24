@@ -14,6 +14,7 @@ Gunakan Dimensi Profil Lulusan sesuai input guru.
 Jangan mengarang data identitas guru/sekolah. Jika kosong, gunakan tanda "........................".
 Jangan menghilangkan bagian template. Jika suatu bagian tidak relevan, tetap isi dengan penyesuaian yang masuk akal.
 Jangan gunakan simbol markdown seperti tanda bintang (**), tanda pagar (#), atau backtick untuk menekankan atau menebalkan kata. Tulis jawaban dalam kalimat dan paragraf yang natural tanpa simbol pemformatan tersebut, seperti orang mengetik pesan biasa.
+Untuk fitur SNESA Literasi, berikan jawaban edukatif dan mudah dipahami murid SMP Negeri 1 Ambarawa. Bedakan fakta dari interpretasi dan jangan mengubah maksud karangan siswa saat memberi saran ejaan.
 `;
 
 const RPM_SCHEMA = {
@@ -156,6 +157,14 @@ ${prompt}
 
 Berikan jawaban yang langsung membantu dan dapat diterapkan.
 `;
+  }
+
+  if (mode === "literasi") {
+    const d = data || {};
+    const text = String(d.text || "");
+    if (d.feature === "bedah") return `Analisis teks berikut untuk murid SMP Negeri 1 Ambarawa. Berikan ringkasan, ide pokok, unsur intrinsik yang relevan (tema, tokoh/penokohan, latar, alur, amanat), kata sulit dan maknanya, serta dua pertanyaan pemahaman. Jika unsur tidak tersedia, katakan demikian. Teks:\n${text}`;
+    if (d.feature === "akm") return `Buat ${d.jumlahSoal || 5} soal AKM Literasi jenis ${d.jenisSoal || "Pilihan Ganda"} berdasarkan teks berikut untuk murid SMP Negeri 1 Ambarawa. Ukur menemukan informasi, memahami, menginterpretasi, mengevaluasi, dan merefleksikan. Pilihan ganda harus memiliki 4 opsi dan kunci serta alasan singkat. Esai harus memiliki pedoman jawaban/penskoran. Jangan membuat jawaban yang tidak didukung teks. Teks:\n${text}`;
+    return `Periksa karangan siswa SMP Negeri 1 Ambarawa berikut dari sisi ejaan, tanda baca, kapitalisasi, pilihan kata, kalimat efektif, dan penggunaan istilah. Berikan temuan, saran perbaikan, alasan singkat, lalu versi karangan yang diperbaiki dengan tetap mempertahankan maksud dan gaya asli siswa. Jangan mengada-adakan kesalahan. Karangan:\n${text}`;
   }
 
   const d = data || {};
