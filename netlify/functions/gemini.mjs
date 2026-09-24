@@ -283,6 +283,25 @@ function identityTable(d) {
   ).join("")}</table>`;
 }
 
+function tanggalIndonesia(date) {
+  const bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  return `${date.getDate()} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
+}
+function signatureBlock(d) {
+  const tanggal = `${d.kota || "........................"}, ${tanggalIndonesia(new Date())}`;
+  return `<table class="ttd">
+    <tr>
+      <td><u>Mengetahui,</u><br><u>Kepala Sekolah</u></td>
+      <td>${esc(tanggal)}<br>Guru Mata Pelajaran</td>
+    </tr>
+    <tr><td class="spacer"></td><td class="spacer"></td></tr>
+    <tr>
+      <td class="nama">${esc(d.kepala || "........................")}<br><span class="nip">NIP. ${esc(d.nipkepala || "........................")}</span></td>
+      <td class="nama">${esc(d.penyusun || "........................")}<br><span class="nip">NIP. ${esc(d.nip || "........................")}</span></td>
+    </tr>
+  </table>`;
+}
+
 function formatRPM(r, d) {
   const meetings = Array.isArray(r.pengalaman_belajar) ? r.pengalaman_belajar : [];
   const meetingsHtml = meetings.map((m, i) => `
@@ -331,7 +350,7 @@ function formatRPM(r, d) {
     <h3>I. Glosarium & Bibliografi</h3>${nl2p(r.glosarium_bibliografi)}
 
     <hr>
-    ${nl2p(r.pengesahan)}
+    ${signatureBlock(d || {})}
   </div>`;
 }
 
