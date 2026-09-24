@@ -57,10 +57,12 @@ label{font-size:13px;font-weight:800}input,select,textarea{width:100%;margin-top
 <div class="tile" onclick="loadTopic('tka')"><h3>🧠 Model TKA</h3><p>Membaca informasi, menalar, menghitung, dan memilih strategi.</p></div></div></div>
 <div class="card" id="numwork"><h2>📝 Latihan Numerasi</h2><p class="muted">Pilih materi untuk memulai.</p></div>
 </section>
-<section id="generator" class="page"><div class="card"><h2>✨ Generator Pembelajaran</h2><div class="grid2">
-<label>Jenis Dokumen<select id="jenis"><option>RPP / Modul Ajar</option><option>LKPD</option><option>Asesmen / Soal</option><option>Program Pembelajaran</option></select></label><label>Tahun Ajaran<input id="tahun" value="2026/2027"></label>
+<section id="generator" class="page"><div class="card"><h2>✨ Generator Pembelajaran</h2><p class="muted">Untuk <b>RPP / Modul Ajar</b>, SNESA AI menggunakan template baku <b>Rencana Pembelajaran Mendalam (RPM)</b> yang sama untuk semua mata pelajaran.</p><div class="grid2">
+<label>Jenis Dokumen<select id="jenis"><option>RPP / Modul Ajar</option><option>LKPD</option><option>Asesmen / Soal</option><option>Program Pembelajaran</option></select></label><label>Nama Penyusun<input id="penyusun" value="Heri Setyanto, S.Pd."></label>
+<label>NIP Guru<input id="nip" value="NIP. 199201112023211006"></label><label>Tahun Ajaran<input id="tahun" value="2026/2027"></label>
 <label>Sekolah<input id="sekolah" value="SMP Negeri 1 Ambarawa"></label><label>Mata Pelajaran<input id="mapel" placeholder="Contoh: IPA"></label>
-<label>Kelas<input id="kelas" placeholder="Contoh: VIII"></label><label>Alokasi Waktu<input id="waktu" placeholder="Contoh: 2 JP"></label>
+<label>Fase / Kelas<input id="kelas" placeholder="Contoh: Fase D / Kelas VII"></label><label>Semester<input id="semester" placeholder="Contoh: Ganjil"></label>
+<label>Jumlah Pertemuan<input id="pertemuan" value="2"></label><label>Alokasi Waktu<input id="waktu" placeholder="Contoh: 2 Pertemuan (80 Menit per pertemuan)"></label>
 <label>Materi / Topik<input id="materi" placeholder="Contoh: Tekanan zat"></label><label>Model Pembelajaran<input id="model" placeholder="PBL / inkuiri"></label>
 <label>Dimensi Profil Lulusan<input id="dpl" placeholder="Tuliskan dimensi"></label><label>Prinsip Pembelajaran Mendalam<textarea id="prinsip" placeholder="Berkesadaran, bermakna, menggembirakan..."></textarea></label>
 <label style="grid-column:1/-1">Konteks / Kondisi Kelas<textarea id="konteks" placeholder="Kemampuan awal, fasilitas, karakter siswa, dll."></textarea></label></div>
