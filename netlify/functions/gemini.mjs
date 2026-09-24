@@ -19,7 +19,6 @@ const RPM_SCHEMA = {
   type: "object",
   properties: {
     judul: { type: "string" },
-    identitas: { type: "string" },
     identifikasi_murid: { type: "string" },
     identifikasi_materi: { type: "string" },
     dpl: { type: "string" },
@@ -31,7 +30,19 @@ const RPM_SCHEMA = {
     kemitraan_pembelajaran: { type: "string" },
     lingkungan_pembelajaran: { type: "string" },
     pemanfaatan_digital: { type: "string" },
-    pengalaman_belajar: { type: "string" },
+    pengalaman_belajar: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          judul_pertemuan: { type: "string" },
+          kegiatan_awal: { type: "string" },
+          kegiatan_inti: { type: "string" },
+          kegiatan_penutup: { type: "string" }
+        },
+        required: ["judul_pertemuan", "kegiatan_awal", "kegiatan_inti", "kegiatan_penutup"]
+      }
+    },
     ringkasan_materi: { type: "string" },
     asesmen: { type: "string" },
     lkm: { type: "string" },
@@ -41,7 +52,7 @@ const RPM_SCHEMA = {
     pengesahan: { type: "string" }
   },
   required: [
-    "judul","identitas","identifikasi_murid","identifikasi_materi","dpl",
+    "judul","identifikasi_murid","identifikasi_materi","dpl",
     "capaian_pembelajaran","topik","tujuan_pembelajaran","indikator_ketercapaian",
     "praktik_pedagogis","kemitraan_pembelajaran","lingkungan_pembelajaran",
     "pemanfaatan_digital","pengalaman_belajar","ringkasan_materi","asesmen",
@@ -245,78 +256,82 @@ ATURAN:
 `;
 }
 
-function formatRPM(r) {
-  return `# RENCANA PEMBELAJARAN MENDALAM (RPM)
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, m => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[m]));
+}
+function nl2p(s) {
+  const t = String(s ?? "").trim();
+  if (!t) return "<p>........................</p>";
+  return t.split(/\n{2,}/).map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+}
+function identityTable(d) {
+  const rows = [
+    ["Nama Penyusun", d.penyusun],
+    ["NIP Guru", d.nip],
+    ["Nama Sekolah", d.sekolah],
+    ["Tahun Pelajaran", d.tahun],
+    ["Mata Pelajaran", d.mapel],
+    ["Fase/Kelas", d.kelas],
+    ["Semester", d.semester],
+    ["Alokasi Waktu", `${d.pertemuan || "2"} Pertemuan (${d.waktu || "........................"} Menit per pertemuan)`]
+  ];
+  return `<table class="identitas">${rows.map(([k, v]) =>
+    `<tr><td class="k">${esc(k)}</td><td class="sep">:</td><td>${esc(v || "........................")}</td></tr>`
+  ).join("")}</table>`;
+}
 
-## IDENTITAS
+function formatRPM(r, d) {
+  const meetings = Array.isArray(r.pengalaman_belajar) ? r.pengalaman_belajar : [];
+  const meetingsHtml = meetings.map((m, i) => `
+    <h4>Langkah-langkah Pembelajaran Pertemuan ke-${i + 1}${m.judul_pertemuan ? " (" + esc(m.judul_pertemuan) + ")" : ""}</h4>
+    <table class="komponen">
+      <tr><th>Tahap Kegiatan</th><th>Deskripsi Kegiatan</th></tr>
+      <tr><td>a. Kegiatan Awal</td><td>${nl2p(m.kegiatan_awal)}</td></tr>
+      <tr><td>b. Kegiatan Inti</td><td>${nl2p(m.kegiatan_inti)}</td></tr>
+      <tr><td>c. Penutup</td><td>${nl2p(m.kegiatan_penutup)}</td></tr>
+    </table>`).join("");
 
-${r.identitas}
+  return `<div class="doc">
+    <h1>RENCANA<br>PEMBELAJARAN MENDALAM (RPM)</h1>
+    ${identityTable(d || {})}
 
-### A. IDENTIFIKASI
+    <h2>A. Identifikasi</h2>
+    <table class="komponen">
+      <tr><th>Komponen</th><th>Deskripsi</th></tr>
+      <tr><td>1. Identifikasi Murid</td><td>${nl2p(r.identifikasi_murid)}</td></tr>
+      <tr><td>2. Identifikasi Materi Pelajaran</td><td>${nl2p(r.identifikasi_materi)}</td></tr>
+      <tr><td>3. Dimensi Profil Lulusan Terintegrasi</td><td>${nl2p(r.dpl)}</td></tr>
+    </table>
 
-#### 1. Identifikasi Murid
-${r.identifikasi_murid}
+    <h2>B. Desain Pembelajaran</h2>
+    <table class="komponen">
+      <tr><th>Komponen</th><th>Deskripsi</th></tr>
+      <tr><td>4. Capaian Pembelajaran</td><td>${nl2p(r.capaian_pembelajaran)}</td></tr>
+      <tr><td>5. Topik Pembelajaran</td><td>${nl2p(r.topik)}</td></tr>
+      <tr><td>6. Tujuan Pembelajaran</td><td>${nl2p(r.tujuan_pembelajaran)}</td></tr>
+      <tr><td>7. Indikator Ketercapaian</td><td>${nl2p(r.indikator_ketercapaian)}</td></tr>
+      <tr><td>8. Praktik Pedagogis</td><td>${nl2p(r.praktik_pedagogis)}</td></tr>
+      <tr><td>9. Kemitraan Pembelajaran</td><td>${nl2p(r.kemitraan_pembelajaran)}</td></tr>
+      <tr><td>10. Lingkungan Pembelajaran</td><td>${nl2p(r.lingkungan_pembelajaran)}</td></tr>
+      <tr><td>11. Pemanfaatan Digital</td><td>${nl2p(r.pemanfaatan_digital)}</td></tr>
+    </table>
 
-#### 2. Identifikasi Materi Pelajaran
-${r.identifikasi_materi}
+    <h2>C. Pengalaman Belajar</h2>
+    ${meetingsHtml || nl2p(r.pengalaman_belajar)}
 
-#### 3. Dimensi Profil Lulusan Terintegrasi
-${r.dpl}
+    <h2>LAMPIRAN</h2>
+    <h3>D. Ringkasan Materi Pembelajaran</h3>${nl2p(r.ringkasan_materi)}
+    <h3>E. Asesmen (Penilaian)</h3>${nl2p(r.asesmen)}
+    <h3>F. Lembar Kegiatan Murid (LKM)</h3>${nl2p(r.lkm)}
+    <h3>G. Bahan Bacaan Guru dan Murid</h3>${nl2p(r.bahan_bacaan)}
+    <h3>H. Rubrik Penilaian</h3>${nl2p(r.rubrik)}
+    <h3>I. Glosarium & Bibliografi</h3>${nl2p(r.glosarium_bibliografi)}
 
-### B. DESAIN PEMBELAJARAN
-
-#### 4. Capaian Pembelajaran
-${r.capaian_pembelajaran}
-
-#### 5. Topik Pembelajaran
-${r.topik}
-
-#### 6. Tujuan Pembelajaran
-${r.tujuan_pembelajaran}
-
-#### 7. Indikator Ketercapaian
-${r.indikator_ketercapaian}
-
-#### 8. Praktik Pedagogis
-${r.praktik_pedagogis}
-
-#### 9. Kemitraan Pembelajaran
-${r.kemitraan_pembelajaran}
-
-#### 10. Lingkungan Pembelajaran
-${r.lingkungan_pembelajaran}
-
-#### 11. Pemanfaatan Digital
-${r.pemanfaatan_digital}
-
-### C. PENGALAMAN BELAJAR
-
-${r.pengalaman_belajar}
-
-## LAMPIRAN
-
-### D. Ringkasan Materi Pembelajaran
-${r.ringkasan_materi}
-
-### E. Asesmen (Penilaian)
-${r.asesmen}
-
-### F. Lembar Kegiatan Murid (LKM)
-${r.lkm}
-
-### G. Bahan Bacaan Guru dan Murid
-${r.bahan_bacaan}
-
-### H. Rubrik Penilaian
-${r.rubrik}
-
-### I. Glosarium & Bibliografi
-${r.glosarium_bibliografi}
-
----
-
-${r.pengesahan}
-`;
+    <hr>
+    ${nl2p(r.pengesahan)}
+  </div>`;
 }
 
 export default async (req) => {
@@ -452,7 +467,7 @@ export default async (req) => {
       } else if (String(data?.jenis || "").toLowerCase().includes("rpp / modul ajar")) {
         try {
           const structured = JSON.parse(text);
-          text = formatRPM(structured);
+          text = formatRPM(structured, data);
         } catch (parseError) {
           console.error("RPM JSON parse error:", parseError);
           return json({ error: "Format RPM dari Gemini tidak valid. Silakan coba lagi." }, 502);
