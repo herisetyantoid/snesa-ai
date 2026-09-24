@@ -44,6 +44,7 @@ label{font-size:13px;font-weight:800}input,select,textarea{width:100%;margin-top
 .doc table.ttd td.spacer{height:55px}
 .doc table.ttd td.nama{font-weight:700;text-decoration:underline}
 .doc table.ttd .nip{font-weight:400;text-decoration:none;display:inline-block;margin-top:2px}
+ .site-footer{max-width:1240px;margin:10px auto 0;padding:22px 18px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -182,6 +183,7 @@ label{font-size:13px;font-weight:800}input,select,textarea{width:100%;margin-top
 </div></section>
 <section id="chat" class="page"><div class="card"><h2>🤖 Guru SNESA</h2><div id="chatlog" class="chatlog"><div class="msg ai">Assalamu'alaikum. Saya Guru SNESA. Ada yang ingin Bapak/Ibu siapkan?</div></div><div class="chatrow"><input id="chatInput" placeholder="Tanyakan sesuatu..."><button class="btn primary" id="send">Kirim</button></div><h3>Ide cepat</h3><div class="quick"><button class="btn secondary q">Buat penjelasan sederhana</button><button class="btn secondary q">Buat pembelajaran diferensiasi</button><button class="btn secondary q">Buat ide praktikum sederhana</button><button class="btn secondary q">Buat pesan untuk wali murid</button></div></div></section>
 </main>
+<footer class="site-footer">Hak Cipta © 2026 SMP Negeri 1 Ambarawa. Hak Cipta Dilindungi Undang-Undang.</footer>
 <script>
 const $=id=>document.getElementById(id);let history=[];let numLevel=7;
 const saved=localStorage.getItem('snesa_access')||'';if(saved)$('login').style.display='none';
