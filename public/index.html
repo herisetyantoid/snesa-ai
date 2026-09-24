@@ -189,3 +189,4 @@ async function ask(m){$('chatlog').insertAdjacentHTML('beforeend','<div class="m
 $('send').onclick=()=>{$('chatInput').value.trim()&&ask($('chatInput').value.trim())};$('chatInput').onkeydown=e=>{if(e.key==='Enter')$('send').click()};document.querySelectorAll('.q').forEach(b=>b.onclick=()=>ask(b.textContent));
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 </script></body></html>
+<!-- SNESA AI generator dynamic fields will be added in next commit -->
