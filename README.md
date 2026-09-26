@@ -48,3 +48,6 @@ Jangan memasukkan API key ke `public/index.html` atau ke repository.
 - Kode akses guru
 - Copy hasil
 - Cetak / PDF
+
+
+<!-- SNESA_DEPLOY_TRIGGER -->
