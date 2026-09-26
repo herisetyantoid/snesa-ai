@@ -17,6 +17,8 @@ Jangan gunakan simbol markdown seperti tanda bintang (**), tanda pagar (#), atau
 Untuk fitur SNESA Literasi, berikan jawaban edukatif dan mudah dipahami murid SMP Negeri 1 Ambarawa. Bedakan fakta dari interpretasi dan jangan mengubah maksud karangan siswa saat memberi saran ejaan.
 `;
 
+const NUMERASI_SCHEMA={type:"object",properties:{judul:{type:"string"},soal:{type:"array",minItems:10,maxItems:10,items:{type:"object",properties:{pertanyaan:{type:"string"},opsi:{type:"array",minItems:4,maxItems:4,items:{type:"string"}},jawaban:{type:"string"},pembahasan:{type:"string"},indikator:{type:"string"}},required:["pertanyaan","opsi","jawaban","pembahasan","indikator"]}}},required:["judul","soal"]};
+
 const RPM_SCHEMA = {
   type: "object",
   properties: {
@@ -158,6 +160,8 @@ ${prompt}
 Berikan jawaban yang langsung membantu dan dapat diterapkan.
 `;
   }
+
+  if (mode === "numerasi") { const d=data||{}; return `Buat tepat 10 soal numerasi interaktif untuk murid SMP Negeri 1 Ambarawa. Kelas: ${d.kelas||"VII"}. Materi: ${d.materi||"Numerasi dasar"}. Level: ${d.level||"Penguatan Dasar"}. Gunakan penjumlahan, pengurangan, perkalian, pembagian, operasi campuran, dan masalah kontekstual sesuai kelas. Kesulitan bertahap. Setiap soal WAJIB memiliki tepat 4 opsi A-D. Field jawaban WAJIB berisi indeks opsi 0,1,2,3. Sertakan pembahasan singkat dan indikator. Pastikan tepat 10 soal dan hanya satu jawaban benar.`; }
 
   if (mode === "literasi") {
     const d = data || {};
@@ -406,6 +410,8 @@ export default async (req) => {
       systemInstruction: SYSTEM_INSTRUCTION,
       maxOutputTokens: 12000
     };
+
+    if (mode === "numerasi") { config.responseMimeType="application/json"; config.responseSchema=NUMERASI_SCHEMA; }
 
     if (mode === "generate") {
       const type = docType(data?.jenis);
